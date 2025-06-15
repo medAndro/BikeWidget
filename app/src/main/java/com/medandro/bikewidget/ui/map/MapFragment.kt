@@ -79,9 +79,12 @@ class MapFragment :
         if (locationSource.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
             if (!locationSource.isActivated) {
                 mapViewModel.setTrackingMode(LocationTrackingMode.None)
-                Toast.makeText(context,
-                    getString(R.string.location_permission_denied_message),
-                    Toast.LENGTH_SHORT).show()
+                Toast
+                    .makeText(
+                        context,
+                        getString(R.string.location_permission_denied_message),
+                        Toast.LENGTH_SHORT,
+                    ).show()
             }
             return
         }
@@ -115,6 +118,7 @@ class MapFragment :
 
     override fun onDestroyView() {
         super.onDestroyView()
+        mapViewModel.saveCameraPosition()
         mapView.onDestroy()
         _binding = null
     }

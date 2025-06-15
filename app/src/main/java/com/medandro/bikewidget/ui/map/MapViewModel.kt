@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Marker
@@ -12,9 +13,14 @@ class MapViewModel : ViewModel() {
     private val _naverMap = MutableLiveData<NaverMap>()
     val naverMap: LiveData<NaverMap> = _naverMap
 
+    var lastCameraPosition: CameraPosition? = null
+
     fun onMapReady(naverMap: NaverMap) {
         _naverMap.value = naverMap
         addMarkerAtCurrentLocation()
+        lastCameraPosition?.let { position ->
+            naverMap.cameraPosition = position
+        }
         setupMap()
     }
 
@@ -33,5 +39,9 @@ class MapViewModel : ViewModel() {
 
     fun setTrackingMode(trackingMode: LocationTrackingMode) {
         naverMap.value?.locationTrackingMode = trackingMode
+    }
+
+    fun saveCameraPosition() {
+        lastCameraPosition = naverMap.value?.cameraPosition
     }
 }
