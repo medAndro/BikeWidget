@@ -15,10 +15,10 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
+        maven("https://repository.map.naver.com/archive/maven")
         mavenCentral()
     }
 }
 
 rootProject.name = "BikeWidget"
 include(":app")
- 
