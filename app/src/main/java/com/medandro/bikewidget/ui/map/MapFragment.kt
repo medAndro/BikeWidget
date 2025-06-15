@@ -1,14 +1,14 @@
 package com.medandro.bikewidget.ui.map
 
-import android.Manifest
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.medandro.bikewidget.R
 import com.medandro.bikewidget.databinding.FragmentMapBinding
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
@@ -22,24 +22,19 @@ class MapFragment :
     private lateinit var mapView: MapView
     private lateinit var mapViewModel: MapViewModel
     private lateinit var locationSource: FusedLocationSource
-    private lateinit var naverMap: NaverMap
 
     private var _binding: FragmentMapBinding? = null
     private val binding get() = _binding!!
 
-    private val locationPermissionLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestPermission(),
-        ) { isGranted: Boolean ->
-            if (isGranted) {
-                mapViewModel.showUserLocationUI()
-                naverMap.locationTrackingMode = LocationTrackingMode.Follow
-                locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
-                naverMap.locationSource = locationSource
-            } else {
-                Toast.makeText(context, "위치 권한이 거부되었습니다.", Toast.LENGTH_SHORT).show()
-            }
-        }
+    private fun isDarkMode(): Boolean {
+        val nightModeFlags = requireContext().resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,9 +43,8 @@ class MapFragment :
     ): View {
         mapViewModel = ViewModelProvider(this).get(MapViewModel::class.java)
         _binding = FragmentMapBinding.inflate(inflater, container, false)
-        val root: View = binding.root
 
-        return root
+        return binding.root
     }
 
     override fun onViewCreated(
@@ -64,9 +58,34 @@ class MapFragment :
     }
 
     override fun onMapReady(naverMap: NaverMap) {
-        this.naverMap = naverMap
         mapViewModel.onMapReady(naverMap)
-        locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        binding.customLocationButton.map = naverMap
+        naverMap.mapType = NaverMap.MapType.Navi
+
+        if (isDarkMode()) {
+            naverMap.isNightModeEnabled = true
+        } else {
+            naverMap.isNightModeEnabled = false
+        }
+        naverMap.locationSource = locationSource
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray,
+    ) {
+        if (locationSource.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+            if (!locationSource.isActivated) {
+                mapViewModel.setTrackingMode(LocationTrackingMode.None)
+                Toast.makeText(context,
+                    getString(R.string.location_permission_denied_message),
+                    Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     override fun onStart() {

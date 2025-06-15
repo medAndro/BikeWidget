@@ -2,4 +2,5 @@
     <string name="app_name">BikeWidget</string>
     <string name="title_map">Map</string>
     <string name="title_favorite">Favorite</string>
+    <string name="location_permission_denied_message">The current location cannot be displayed because location permission have been denied</string>
 </resources>

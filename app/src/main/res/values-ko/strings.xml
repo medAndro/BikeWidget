@@ -3,4 +3,5 @@
     <string name="app_name">따릉위젯</string>
     <string name="title_map">지도</string>
     <string name="title_favorite">즐겨찾기</string>
+    <string name="location_permission_denied_message">위치 권한이 거부되어 현재 위치를 표시할 수 없습니다</string>
 </resources>
