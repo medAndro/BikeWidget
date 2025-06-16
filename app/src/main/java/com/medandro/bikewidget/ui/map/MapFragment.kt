@@ -12,16 +12,20 @@ import com.medandro.bikewidget.R
 import com.medandro.bikewidget.data.station.StationRemoteDataSource
 import com.medandro.bikewidget.data.station.StationRepositoryImpl
 import com.medandro.bikewidget.databinding.FragmentMapBinding
+import com.medandro.bikewidget.domain.Station
+import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
+import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.util.FusedLocationSource
 
 class MapFragment :
     Fragment(),
     OnMapReadyCallback {
     private lateinit var mapView: MapView
+    private lateinit var naverMap: NaverMap
     private val mapViewModel: MapViewModel by viewModels {
         val repository = StationRepositoryImpl(StationRemoteDataSource())
         MapViewModelFactory(repository)
@@ -59,19 +63,45 @@ class MapFragment :
         mapView = binding.mapView
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
+        setupObservers()
+    }
+
+    private fun setupObservers() {
+        mapViewModel.stations.observe(viewLifecycleOwner) { stationList ->
+            if (::naverMap.isInitialized) {
+                drawMarkers(stationList)
+            }
+        }
     }
 
     override fun onMapReady(naverMap: NaverMap) {
-        mapViewModel.onMapReady(naverMap)
+        this.naverMap = naverMap
+        setupMapUI()
         binding.customLocationButton.map = naverMap
         naverMap.mapType = NaverMap.MapType.Navi
 
-        if (isDarkMode()) {
-            naverMap.isNightModeEnabled = true
-        } else {
-            naverMap.isNightModeEnabled = false
-        }
         naverMap.locationSource = locationSource
+        mapViewModel.lastCameraPosition?.let { naverMap.cameraPosition = it }
+        mapViewModel.stations.value?.let { drawMarkers(it) }
+    }
+
+    fun drawMarkers(stations: List<Station>) {
+        stations.forEach { station ->
+            Marker().apply {
+                position = LatLng(station.latitude, station.longitude)
+                captionText = station.name
+                map = this@MapFragment.naverMap
+            }
+        }
+    }
+
+    private fun setupMapUI() {
+        naverMap.uiSettings.isLocationButtonEnabled = false
+        naverMap.locationOverlay.isVisible = false
+        if (isDarkMode()) {
+            naverMap.mapType = NaverMap.MapType.Navi
+            naverMap.isNightModeEnabled = true
+        }
     }
 
     @Deprecated("Deprecated in Java")
@@ -82,7 +112,7 @@ class MapFragment :
     ) {
         if (locationSource.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
             if (!locationSource.isActivated) {
-                mapViewModel.setTrackingMode(LocationTrackingMode.None)
+                naverMap.locationTrackingMode = LocationTrackingMode.None
                 Toast
                     .makeText(
                         context,
@@ -122,7 +152,9 @@ class MapFragment :
 
     override fun onDestroyView() {
         super.onDestroyView()
-        mapViewModel.saveCameraPosition()
+        if (::naverMap.isInitialized) {
+            mapViewModel.saveCameraPosition(naverMap.cameraPosition)
+        }
         mapView.onDestroy()
         _binding = null
     }

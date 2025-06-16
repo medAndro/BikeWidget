@@ -1,7 +1,8 @@
 package com.medandro.bikewidget.domain
 
 data class Station(
-    val rawIndex: String,
+    val visibleIndex: String,
+    val index: Int,
     val id: String,
     val name: String,
     val latitude: Double,

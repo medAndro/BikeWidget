@@ -6,18 +6,19 @@ import com.medandro.bikewidget.domain.Station
 
 object Mapper {
     fun List<SeoulBikeStation>.toDomain(): List<Station> =
-        this.map {
-            it.toDomain()
+        this.mapIndexed { index, station ->
+            station.toDomain(index)
         }
 
-    fun SeoulBikeStation.toDomain(): Station {
+    fun SeoulBikeStation.toDomain(index: Int = -1): Station {
         val regex = Regex("^(\\d+)\\.?\\s*(.*)")
         val matchResult = regex.find(this.name)
 
         return if (matchResult != null) {
-            val (index, stationName) = matchResult.destructured
+            val (visibleIndex, stationName) = matchResult.destructured
             Station(
-                rawIndex = index,
+                visibleIndex = visibleIndex,
+                index = index,
                 id = this.id,
                 name = stationName,
                 latitude = this.latitude,
@@ -27,7 +28,8 @@ object Mapper {
             )
         } else {
             Station(
-                rawIndex = "none",
+                visibleIndex = "",
+                index = index,
                 id = this.id,
                 name = this.name.trim(),
                 latitude = this.latitude,
