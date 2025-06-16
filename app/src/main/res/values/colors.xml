@@ -8,6 +8,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <color name="seoul_bike_green_day">#44bd7f</color>
+    <color name="seoul_bike_green_night">#225E3F</color>
 
     <color name="cyan_blue_400">#4f778e</color>
     <color name="cyan_blue_300">#6096B4</color>

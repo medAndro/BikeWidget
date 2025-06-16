@@ -1,11 +1,17 @@
 package com.medandro.bikewidget.ui.map
 
+import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.medandro.bikewidget.R
@@ -13,12 +19,14 @@ import com.medandro.bikewidget.data.station.StationRemoteDataSource
 import com.medandro.bikewidget.data.station.StationRepositoryImpl
 import com.medandro.bikewidget.databinding.FragmentMapBinding
 import com.medandro.bikewidget.domain.Station
+import com.medandro.bikewidget.utils.getColorFromAttribute
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.Marker
+import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.util.FusedLocationSource
 
 class MapFragment :
@@ -31,6 +39,9 @@ class MapFragment :
         MapViewModelFactory(repository)
     }
     private lateinit var locationSource: FusedLocationSource
+    private val currentMarkers = mutableListOf<Marker>()
+
+    private lateinit var resizedMarkerIcon: OverlayImage
 
     private var _binding: FragmentMapBinding? = null
     private val binding get() = _binding!!
@@ -79,19 +90,28 @@ class MapFragment :
         setupMapUI()
         binding.customLocationButton.map = naverMap
         naverMap.mapType = NaverMap.MapType.Navi
-
+        prepareMarkerIcon()
         naverMap.locationSource = locationSource
         mapViewModel.lastCameraPosition?.let { naverMap.cameraPosition = it }
         mapViewModel.stations.value?.let { drawMarkers(it) }
     }
 
     fun drawMarkers(stations: List<Station>) {
+        currentMarkers.forEach { it.map = null }
+        currentMarkers.clear()
+        val markerTintColor = requireContext().getColorFromAttribute(R.attr.colorSeoulBikeGreen)
         stations.forEach { station ->
-            Marker().apply {
-                position = LatLng(station.latitude, station.longitude)
-                captionText = station.name
-                map = this@MapFragment.naverMap
-            }
+            val marker =
+                Marker().apply {
+                    position = LatLng(station.latitude, station.longitude)
+                    captionOffset = -90
+                    captionTextSize = 16f
+                    captionText = station.parkingQuantity.toString()
+                    map = this@MapFragment.naverMap
+                    iconTintColor = markerTintColor
+                    icon = resizedMarkerIcon
+                }
+            currentMarkers.add(marker)
         }
     }
 
@@ -123,6 +143,38 @@ class MapFragment :
             return
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    private fun prepareMarkerIcon() {
+        val resizedBitmap =
+            getBitmapFromVectorDrawable(
+                requireContext(),
+                R.drawable.ic_marker,
+                MARKER_SIZE,
+                MARKER_SIZE,
+            )
+
+        if (resizedBitmap == null) {
+            Log.e("MapFragment", "Failed to create bitmap from vector drawable.")
+            return
+        }
+
+        resizedMarkerIcon = OverlayImage.fromBitmap(resizedBitmap)
+    }
+
+    private fun getBitmapFromVectorDrawable(
+        context: Context,
+        drawableId: Int,
+        width: Int,
+        height: Int,
+    ): Bitmap? {
+        val drawable = ContextCompat.getDrawable(context, drawableId) ?: return null
+        val bitmap = createBitmap(width, height)
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+
+        return bitmap
     }
 
     override fun onStart() {
@@ -166,5 +218,7 @@ class MapFragment :
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1000
+
+        private const val MARKER_SIZE = 100
     }
 }
