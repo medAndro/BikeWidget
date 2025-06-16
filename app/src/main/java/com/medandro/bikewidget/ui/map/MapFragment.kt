@@ -7,8 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import com.medandro.bikewidget.R
+import com.medandro.bikewidget.data.station.StationRemoteDataSource
+import com.medandro.bikewidget.data.station.StationRepositoryImpl
 import com.medandro.bikewidget.databinding.FragmentMapBinding
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
@@ -20,7 +22,10 @@ class MapFragment :
     Fragment(),
     OnMapReadyCallback {
     private lateinit var mapView: MapView
-    private lateinit var mapViewModel: MapViewModel
+    private val mapViewModel: MapViewModel by viewModels {
+        val repository = StationRepositoryImpl(StationRemoteDataSource())
+        MapViewModelFactory(repository)
+    }
     private lateinit var locationSource: FusedLocationSource
 
     private var _binding: FragmentMapBinding? = null
@@ -41,7 +46,6 @@ class MapFragment :
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        mapViewModel = ViewModelProvider(this).get(MapViewModel::class.java)
         _binding = FragmentMapBinding.inflate(inflater, container, false)
 
         return binding.root

@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.serialization)
+    alias(libs.plugins.secrets.gradle)
 }
 
 android {
@@ -36,6 +38,7 @@ android {
     buildFeatures {
         viewBinding = true
         dataBinding = true
+        buildConfig = true
     }
 }
 
@@ -50,6 +53,9 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.map.sdk)
     implementation(libs.google.play.services.location)
+    implementation(libs.retrofit)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.retrofit2.kotlinx.serialization.converter)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
