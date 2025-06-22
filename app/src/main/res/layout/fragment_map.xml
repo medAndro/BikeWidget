@@ -1,68 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.map.MapFragment">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <com.naver.maps.map.MapView
-        android:id="@+id/map_view"
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="viewModel"
+            type="com.medandro.bikewidget.ui.map.MapViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        tools:context=".ui.map.MapFragment">
 
-    <com.naver.maps.map.widget.LocationButtonView
-        android:id="@+id/custom_location_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <com.naver.maps.map.MapView
+            android:id="@+id/map_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_add_favorite"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="30dp"
-        android:layout_marginBottom="30dp"
-        android:backgroundTint="?attr/colorPrimary"
-        android:clickable="true"
-        android:contentDescription="@string/map_fragment_add_favorite_button_description"
-        android:focusable="true"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="6dp"
-        app:layout_constraintBottom_toBottomOf="@+id/map_view"
-        app:layout_constraintEnd_toEndOf="@+id/map_view"
-        app:rippleColor="?attr/colorSecondaryVariant">
-
-        <LinearLayout
+        <com.naver.maps.map.widget.LocationButtonView
+            android:id="@+id/custom_location_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="12dp"
-            tools:ignore="UseCompoundDrawables">
+            android:layout_margin="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginEnd="8dp"
-                android:src="@drawable/ic_star"
-                app:tint="?attr/colorSecondaryVariant"
-                tools:ignore="ContentDescription" />
 
-            <TextView
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_add_favorite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="30dp"
+            android:layout_marginBottom="30dp"
+            android:backgroundTint="?attr/colorPrimary"
+            android:visibility="@{viewModel.selectedStations != null ? View.VISIBLE : View.GONE}"
+            android:clickable="true"
+            android:contentDescription="@string/map_fragment_add_favorite_button_description"
+            android:focusable="true"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="6dp"
+            app:layout_constraintBottom_toBottomOf="@+id/map_view"
+            app:layout_constraintEnd_toEndOf="@+id/map_view"
+            app:rippleColor="?attr/colorSecondaryVariant">
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/map_fragment_add_favorite_button_text"
-                android:textColor="?attr/colorSecondaryVariant"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="12dp"
+                tools:ignore="UseCompoundDrawables">
 
-    </com.google.android.material.card.MaterialCardView>
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="8dp"
+                    android:src="@drawable/ic_star"
+                    app:tint="?attr/colorSecondaryVariant"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/map_fragment_add_favorite_button_text"
+                    android:textColor="?attr/colorSecondaryVariant"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

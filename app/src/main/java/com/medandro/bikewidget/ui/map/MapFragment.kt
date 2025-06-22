@@ -75,6 +75,8 @@ class MapFragment :
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        binding.viewModel = mapViewModel
+        binding.lifecycleOwner = viewLifecycleOwner
         mapView = binding.mapView
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
