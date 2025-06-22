@@ -3,4 +3,6 @@
     <string name="title_map">Map</string>
     <string name="title_favorite">Favorite</string>
     <string name="location_permission_denied_message">The current location cannot be displayed because location permission have been denied</string>
+    <string name="map_fragment_add_favorite_button_description">Add Favorite Button</string>
+    <string name="map_fragment_add_favorite_button_text">Add Favorite</string>
 </resources>

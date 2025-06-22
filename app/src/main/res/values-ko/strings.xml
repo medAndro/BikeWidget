@@ -4,4 +4,6 @@
     <string name="title_map">지도</string>
     <string name="title_favorite">즐겨찾기</string>
     <string name="location_permission_denied_message">위치 권한이 거부되어 현재 위치를 표시할 수 없습니다</string>
+    <string name="map_fragment_add_favorite_button_description">즐겨찾기 추가 버튼</string>
+    <string name="map_fragment_add_favorite_button_text">즐겨찾기 추가</string>
 </resources>
