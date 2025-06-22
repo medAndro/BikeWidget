@@ -21,6 +21,8 @@ import com.medandro.bikewidget.databinding.FragmentMapBinding
 import com.medandro.bikewidget.domain.Station
 import com.medandro.bikewidget.utils.getColorFromAttribute
 import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.CameraAnimation
+import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
@@ -76,6 +78,16 @@ class MapFragment :
         mapView = binding.mapView
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
+    }
+
+    override fun onMapReady(naverMap: NaverMap) {
+        this.naverMap = naverMap
+        setupMapUI()
+        binding.customLocationButton.map = naverMap
+        naverMap.mapType = NaverMap.MapType.Navi
+        prepareMarkerIcon()
+        naverMap.locationSource = locationSource
+        mapViewModel.lastCameraPosition?.let { naverMap.cameraPosition = it }
         setupObservers()
     }
 
@@ -88,21 +100,10 @@ class MapFragment :
         }
         mapViewModel.selectedStations.observe(viewLifecycleOwner) { station ->
             clearInfoWindows()
-            station?.let { showMarkerInfoWindow(it) }
-        }
-    }
-
-    override fun onMapReady(naverMap: NaverMap) {
-        this.naverMap = naverMap
-        setupMapUI()
-        binding.customLocationButton.map = naverMap
-        naverMap.mapType = NaverMap.MapType.Navi
-        prepareMarkerIcon()
-        naverMap.locationSource = locationSource
-        mapViewModel.lastCameraPosition?.let { naverMap.cameraPosition = it }
-        mapViewModel.stations.value?.let {
-            drawMarkers(it)
-            setMarkerClickListener()
+            station?.let {
+                scrollCamera(LatLng(station.latitude, station.longitude))
+                showMarkerInfoWindow(it)
+            }
         }
     }
 
@@ -219,6 +220,11 @@ class MapFragment :
         drawable.draw(canvas)
 
         return bitmap
+    }
+
+    private fun scrollCamera(latLng: LatLng) {
+        val cameraUpdate = CameraUpdate.scrollTo(latLng).animate(CameraAnimation.Easing)
+        naverMap.moveCamera(cameraUpdate)
     }
 
     override fun onStart() {
