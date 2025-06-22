@@ -118,9 +118,10 @@ class MapFragment :
     private fun setupMapUI() {
         naverMap.uiSettings.isLocationButtonEnabled = false
         naverMap.locationOverlay.isVisible = false
-        if (isDarkMode()) {
-            naverMap.mapType = NaverMap.MapType.Navi
-            naverMap.isNightModeEnabled = true
+        naverMap.mapType = NaverMap.MapType.Navi
+        when (isDarkMode()) {
+            true -> naverMap.isNightModeEnabled = true
+            false -> naverMap.isNightModeEnabled = false
         }
     }
 
