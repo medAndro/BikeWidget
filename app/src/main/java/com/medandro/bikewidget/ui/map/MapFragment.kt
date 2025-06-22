@@ -25,6 +25,7 @@ import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
+import com.naver.maps.map.overlay.InfoWindow
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.util.FusedLocationSource
@@ -39,7 +40,8 @@ class MapFragment :
         MapViewModelFactory(repository)
     }
     private lateinit var locationSource: FusedLocationSource
-    private val currentMarkers = mutableListOf<Marker>()
+    private val currentMarkers = mutableMapOf<Station, Marker>()
+    private val markerInfoWindows = mutableMapOf<Station, InfoWindow>()
 
     private lateinit var resizedMarkerIcon: OverlayImage
 
@@ -81,7 +83,12 @@ class MapFragment :
         mapViewModel.stations.observe(viewLifecycleOwner) { stationList ->
             if (::naverMap.isInitialized) {
                 drawMarkers(stationList)
+                setMarkerClickListener()
             }
+        }
+        mapViewModel.selectedStations.observe(viewLifecycleOwner) { station ->
+            clearInfoWindows()
+            station?.let { showMarkerInfoWindow(it) }
         }
     }
 
@@ -93,11 +100,14 @@ class MapFragment :
         prepareMarkerIcon()
         naverMap.locationSource = locationSource
         mapViewModel.lastCameraPosition?.let { naverMap.cameraPosition = it }
-        mapViewModel.stations.value?.let { drawMarkers(it) }
+        mapViewModel.stations.value?.let {
+            drawMarkers(it)
+            setMarkerClickListener()
+        }
     }
 
     fun drawMarkers(stations: List<Station>) {
-        currentMarkers.forEach { it.map = null }
+        currentMarkers.values.forEach { it.map = null }
         currentMarkers.clear()
         val markerTintColor = requireContext().getColorFromAttribute(R.attr.colorSeoulBikeGreen)
         stations.forEach { station ->
@@ -111,8 +121,41 @@ class MapFragment :
                     iconTintColor = markerTintColor
                     icon = resizedMarkerIcon
                 }
-            currentMarkers.add(marker)
+            currentMarkers[station] = marker
         }
+    }
+
+    private fun setMarkerClickListener() {
+        currentMarkers.forEach { station, marker ->
+            marker.setOnClickListener {
+                mapViewModel.stationSelect(station)
+                true
+            }
+        }
+    }
+
+    private fun showMarkerInfoWindow(station: Station) {
+        currentMarkers[station]?.let { marker ->
+            val infoWindow = makeInfoWindow(station)
+            infoWindow.open(marker)
+            markerInfoWindows[station] = infoWindow
+        }
+    }
+
+    private fun makeInfoWindow(station: Station): InfoWindow {
+        val infoWindow = InfoWindow()
+        infoWindow.adapter =
+            object : InfoWindow.DefaultTextAdapter(requireContext()) {
+                override fun getText(infoWindow: InfoWindow): CharSequence = station.name
+            }
+        return infoWindow
+    }
+
+    private fun clearInfoWindows() {
+        markerInfoWindows.forEach { station, infoWindow ->
+            infoWindow.close()
+        }
+        markerInfoWindows.clear()
     }
 
     private fun setupMapUI() {

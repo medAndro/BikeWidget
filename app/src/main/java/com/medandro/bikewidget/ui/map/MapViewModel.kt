@@ -16,6 +16,9 @@ class MapViewModel(
     private val _stations = MutableLiveData<List<Station>>()
     val stations: LiveData<List<Station>> = _stations
 
+    private val _selectedStations = MutableLiveData<Station?>()
+    val selectedStations: LiveData<Station?> = _selectedStations
+
     var lastCameraPosition: CameraPosition? = null
 
     init {
@@ -31,6 +34,15 @@ class MapViewModel(
                 }.onFailure { throwable ->
                     Log.d("요청 실패", "$throwable")
                 }
+        }
+    }
+
+    fun stationSelect(station: Station) {
+        when {
+            station == selectedStations.value -> _selectedStations.value = null
+            else -> {
+                _selectedStations.value = station
+            }
         }
     }
 
